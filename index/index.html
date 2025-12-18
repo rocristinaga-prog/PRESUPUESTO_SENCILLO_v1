@@ -1,0 +1,2573 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Presupuesto">
+<title>Presupuesto Familiar - iOS</title>
+<style>
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+-webkit-tap-highlight-color: transparent;
+}
+
+body {
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+background: #f2f2f7;
+padding-bottom: 80px;
+overflow-x: hidden;
+}
+
+.header {
+background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+color: white;
+padding: 60px 20px 20px;
+position: sticky;
+top: 0;
+z-index: 100;
+box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header h1 {
+font-size: 28px;
+font-weight: 700;
+margin-bottom: 5px;
+}
+
+.header p {
+opacity: 0.9;
+font-size: 15px;
+}
+
+.mes-selector {
+display: flex;
+align-items: center;
+justify-content: space-between;
+background: rgba(255,255,255,0.2);
+padding: 12px 16px;
+border-radius: 12px;
+margin-top: 15px;
+backdrop-filter: blur(10px);
+}
+
+.mes-selector button {
+background: rgba(255,255,255,0.3);
+border: none;
+color: white;
+width: 36px;
+height: 36px;
+border-radius: 18px;
+font-size: 18px;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.mes-selector button:active {
+background: rgba(255,255,255,0.5);
+}
+
+.mes-actual {
+font-size: 17px;
+font-weight: 600;
+flex: 1;
+text-align: center;
+}
+
+.tabs {
+display: flex;
+background: white;
+position: sticky;
+top: 168px;
+z-index: 99;
+border-bottom: 1px solid #e5e5ea;
+overflow-x: auto;
+-webkit-overflow-scrolling: touch;
+}
+
+.tab {
+flex: 1;
+padding: 15px;
+text-align: center;
+font-size: 14px;
+font-weight: 600;
+color: #8e8e93;
+border-bottom: 2px solid transparent;
+cursor: pointer;
+transition: all 0.3s;
+white-space: nowrap;
+min-width: 100px;
+}
+
+.tab.active {
+color: #007AFF;
+border-bottom-color: #007AFF;
+}
+
+.content {
+display: none;
+padding: 15px;
+}
+
+.content.active {
+display: block;
+}
+
+.card {
+background: white;
+border-radius: 12px;
+padding: 16px;
+margin-bottom: 15px;
+box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.card-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 12px;
+}
+
+.card-title {
+font-size: 17px;
+font-weight: 600;
+color: #000;
+}
+
+.card-subtitle {
+font-size: 13px;
+color: #8e8e93;
+margin-top: 2px;
+}
+
+.cuenta-item {
+background: white;
+border-radius: 12px;
+padding: 16px;
+margin-bottom: 12px;
+box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+position: relative;
+}
+
+.cuenta-header {
+display: flex;
+justify-content: space-between;
+align-items: flex-start;
+margin-bottom: 10px;
+}
+
+.cuenta-nombre {
+font-size: 17px;
+font-weight: 600;
+color: #000;
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.cuenta-banco {
+font-size: 13px;
+color: #8e8e93;
+margin-top: 3px;
+}
+
+.cuenta-info-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 10px;
+margin-top: 12px;
+padding-top: 12px;
+border-top: 1px solid #f2f2f7;
+}
+
+.cuenta-info-item {
+text-align: center;
+}
+
+.cuenta-info-label {
+font-size: 11px;
+color: #8e8e93;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+margin-bottom: 4px;
+}
+
+.cuenta-info-valor {
+font-size: 15px;
+font-weight: 600;
+}
+
+.cuenta-saldo {
+font-size: 24px;
+font-weight: 700;
+text-align: right;
+}
+
+.saldo-positivo {
+color: #34C759;
+}
+
+.saldo-negativo {
+color: #FF3B30;
+}
+
+.cuenta-acciones {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 8px;
+margin-top: 12px;
+}
+
+.cuenta-opciones {
+display: flex;
+gap: 8px;
+}
+
+.btn-icono {
+background: transparent;
+border: none;
+font-size: 20px;
+cursor: pointer;
+padding: 4px;
+width: 32px;
+height: 32px;
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: 8px;
+transition: background 0.2s;
+}
+
+.btn-icono:active {
+background: rgba(0,0,0,0.1);
+}
+
+.btn {
+background: #007AFF;
+color: white;
+border: none;
+border-radius: 10px;
+padding: 12px 20px;
+font-size: 15px;
+font-weight: 600;
+cursor: pointer;
+width: 100%;
+transition: opacity 0.2s;
+}
+
+.btn:active {
+opacity: 0.7;
+}
+
+.btn-small {
+padding: 8px 12px;
+font-size: 13px;
+}
+
+.btn-secondary {
+background: #E5E5EA;
+color: #000;
+}
+
+.btn-danger {
+background: #FF3B30;
+}
+
+.btn-success {
+background: #34C759;
+}
+
+.btn-warning {
+background: #FF9500;
+}
+
+.form-group {
+margin-bottom: 16px;
+}
+
+.form-label {
+display: block;
+font-size: 13px;
+font-weight: 600;
+color: #000;
+margin-bottom: 6px;
+}
+
+.form-input, .form-select {
+width: 100%;
+padding: 12px;
+border: 1px solid #e5e5ea;
+border-radius: 10px;
+font-size: 16px;
+background: white;
+-webkit-appearance: none;
+}
+
+.form-input:focus, .form-select:focus {
+outline: none;
+border-color: #007AFF;
+}
+
+.movimiento-item {
+background: white;
+padding: 14px;
+border-bottom: 1px solid #f2f2f7;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+
+.movimiento-item:last-child {
+border-bottom: none;
+}
+
+.movimiento-info {
+flex: 1;
+}
+
+.movimiento-categoria {
+display: flex;
+align-items: center;
+gap: 8px;
+font-size: 15px;
+font-weight: 600;
+margin-bottom: 4px;
+}
+
+.movimiento-descripcion {
+font-size: 13px;
+color: #8e8e93;
+}
+
+.movimiento-monto {
+font-size: 18px;
+font-weight: 700;
+}
+
+.ingreso {
+color: #34C759;
+}
+
+.gasto {
+color: #FF3B30;
+}
+
+.presupuesto-item {
+background: white;
+border-radius: 12px;
+padding: 16px;
+margin-bottom: 12px;
+box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.presupuesto-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 10px;
+}
+
+.presupuesto-categoria {
+display: flex;
+align-items: center;
+gap: 8px;
+font-size: 16px;
+font-weight: 600;
+}
+
+.presupuesto-monto {
+text-align: right;
+}
+
+.presupuesto-asignado {
+font-size: 13px;
+color: #8e8e93;
+}
+
+.presupuesto-gastado {
+font-size: 18px;
+font-weight: 700;
+}
+
+.barra-progreso {
+height: 8px;
+background: #f2f2f7;
+border-radius: 4px;
+overflow: hidden;
+margin-top: 10px;
+}
+
+.barra-progreso-fill {
+height: 100%;
+background: linear-gradient(90deg, #34C759 0%, #30D158 100%);
+transition: width 0.3s;
+}
+
+.barra-progreso-fill.alerta {
+background: linear-gradient(90deg, #FF9500 0%, #FFCC00 100%);
+}
+
+.barra-progreso-fill.excedido {
+background: linear-gradient(90deg, #FF3B30 0%, #FF453A 100%);
+}
+
+.modal {
+display: none;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0,0,0,0.5);
+z-index: 1000;
+align-items: flex-end;
+}
+
+.modal.active {
+display: flex;
+}
+
+.modal-content {
+background: white;
+width: 100%;
+border-radius: 20px 20px 0 0;
+padding: 20px;
+max-height: 90vh;
+overflow-y: auto;
+animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+from {
+transform: translateY(100%);
+}
+to {
+transform: translateY(0);
+}
+}
+
+.modal-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 20px;
+}
+
+.modal-titulo {
+font-size: 20px;
+font-weight: 700;
+}
+
+.btn-cerrar {
+background: #E5E5EA;
+border: none;
+width: 32px;
+height: 32px;
+border-radius: 16px;
+font-size: 18px;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.lista-categorias {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 12px;
+margin-top: 16px;
+}
+
+.categoria-opcion {
+background: white;
+border: 2px solid #e5e5ea;
+border-radius: 12px;
+padding: 12px;
+text-align: center;
+cursor: pointer;
+transition: all 0.2s;
+}
+
+.categoria-opcion:active {
+transform: scale(0.95);
+}
+
+.categoria-opcion.selected {
+border-color: #007AFF;
+background: #E5F2FF;
+}
+
+.categoria-emoji {
+font-size: 28px;
+margin-bottom: 6px;
+}
+
+.categoria-nombre {
+font-size: 12px;
+font-weight: 600;
+color: #000;
+}
+
+.seccion-titulo {
+font-size: 15px;
+font-weight: 600;
+color: #8e8e93;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+margin: 20px 0 10px 0;
+}
+
+.estadisticas-grid {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 12px;
+margin-bottom: 20px;
+}
+
+.estadistica-card {
+background: white;
+border-radius: 12px;
+padding: 16px;
+box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.estadistica-label {
+font-size: 12px;
+color: #8e8e93;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+margin-bottom: 6px;
+}
+
+.estadistica-valor {
+font-size: 24px;
+font-weight: 700;
+}
+
+.resumen-mes {
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+color: white;
+border-radius: 16px;
+padding: 20px;
+margin-bottom: 20px;
+}
+
+.resumen-mes h3 {
+font-size: 16px;
+opacity: 0.9;
+margin-bottom: 10px;
+}
+
+.resumen-balance {
+font-size: 36px;
+font-weight: 700;
+margin-bottom: 8px;
+}
+
+.resumen-detalle {
+display: flex;
+justify-content: space-between;
+font-size: 14px;
+opacity: 0.9;
+}
+
+.fab {
+position: fixed;
+bottom: 90px;
+right: 20px;
+width: 56px;
+height: 56px;
+background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+color: white;
+border: none;
+border-radius: 28px;
+font-size: 28px;
+cursor: pointer;
+box-shadow: 0 4px 12px rgba(0,122,255,0.4);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 999;
+transition: transform 0.2s;
+}
+
+.fab:active {
+transform: scale(0.9);
+}
+
+.bottom-nav {
+position: fixed;
+bottom: 0;
+left: 0;
+right: 0;
+background: white;
+border-top: 1px solid #e5e5ea;
+display: flex;
+justify-content: space-around;
+padding: 8px 0 20px 0;
+z-index: 998;
+}
+
+.nav-item {
+flex: 1;
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 4px;
+color: #8e8e93;
+font-size: 11px;
+cursor: pointer;
+padding: 8px;
+}
+
+.nav-item.active {
+color: #007AFF;
+}
+
+.nav-icon {
+font-size: 24px;
+}
+
+.empty-state {
+text-align: center;
+padding: 40px 20px;
+}
+
+.empty-state-icon {
+font-size: 64px;
+margin-bottom: 16px;
+opacity: 0.3;
+}
+
+.empty-state-text {
+font-size: 16px;
+color: #8e8e93;
+margin-bottom: 20px;
+}
+
+.filtros-container {
+background: white;
+border-radius: 12px;
+padding: 16px;
+margin-bottom: 15px;
+box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.filtros-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 10px;
+}
+
+.badge {
+display: inline-block;
+padding: 4px 10px;
+border-radius: 12px;
+font-size: 11px;
+font-weight: 600;
+}
+
+.badge-info {
+background: #E5F2FF;
+color: #007AFF;
+}
+
+.badge-success {
+background: #E8F5E9;
+color: #34C759;
+}
+
+.badge-danger {
+background: #FFE5E5;
+color: #FF3B30;
+}
+
+.badge-warning {
+background: #FFF3E0;
+color: #FF9500;
+}
+
+.chart-container {
+background: white;
+border-radius: 12px;
+padding: 16px;
+margin-bottom: 15px;
+box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.mini-chart {
+height: 150px;
+margin-top: 10px;
+}
+
+.checkbox-group {
+display: flex;
+align-items: center;
+gap: 8px;
+margin-bottom: 10px;
+}
+
+.checkbox-group input[type="checkbox"] {
+width: 20px;
+height: 20px;
+accent-color: #007AFF;
+}
+
+.switch {
+position: relative;
+display: inline-block;
+width: 51px;
+height: 31px;
+}
+
+.switch input {
+opacity: 0;
+width: 0;
+height: 0;
+}
+
+.slider {
+position: absolute;
+cursor: pointer;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background-color: #e5e5ea;
+transition: .3s;
+border-radius: 31px;
+}
+
+.slider:before {
+position: absolute;
+content: "";
+height: 27px;
+width: 27px;
+left: 2px;
+bottom: 2px;
+background-color: white;
+transition: .3s;
+border-radius: 50%;
+}
+
+input:checked + .slider {
+background-color: #34C759;
+}
+
+input:checked + .slider:before {
+transform: translateX(20px);
+}
+
+.action-sheet {
+display: none;
+position: fixed;
+bottom: 0;
+left: 0;
+right: 0;
+background: white;
+border-radius: 20px 20px 0 0;
+padding: 20px;
+z-index: 1001;
+animation: slideUp 0.3s ease;
+}
+
+.action-sheet.active {
+display: block;
+}
+
+.action-sheet-option {
+padding: 16px;
+text-align: center;
+font-size: 16px;
+border-bottom: 1px solid #f2f2f7;
+cursor: pointer;
+}
+
+.action-sheet-option:last-child {
+border-bottom: none;
+}
+
+.action-sheet-option:active {
+background: #f2f2f7;
+}
+
+.action-sheet-option.danger {
+color: #FF3B30;
+}
+
+.toast {
+position: fixed;
+top: 80px;
+left: 50%;
+transform: translateX(-50%);
+background: rgba(0,0,0,0.8);
+color: white;
+padding: 12px 20px;
+border-radius: 20px;
+font-size: 14px;
+z-index: 2000;
+display: none;
+}
+
+.toast.show {
+display: block;
+animation: fadeInOut 2s ease;
+}
+
+@keyframes fadeInOut {
+0%, 100% { opacity: 0; }
+10%, 90% { opacity: 1; }
+}
+
+.skeleton {
+background: linear-gradient(90deg, #f2f2f7 25%, #e5e5ea 50%, #f2f2f7 75%);
+background-size: 200% 100%;
+animation: loading 1.5s infinite;
+border-radius: 8px;
+}
+
+@keyframes loading {
+0% { background-position: 200% 0; }
+100% { background-position: -200% 0; }
+}
+
+.emoji-picker {
+display: grid;
+grid-template-columns: repeat(6, 1fr);
+gap: 10px;
+max-height: 200px;
+overflow-y: auto;
+padding: 10px 0;
+}
+
+.emoji-option {
+font-size: 28px;
+text-align: center;
+padding: 8px;
+border-radius: 8px;
+cursor: pointer;
+transition: background 0.2s;
+}
+
+.emoji-option:active {
+background: #f2f2f7;
+}
+
+.emoji-option.selected {
+background: #E5F2FF;
+}
+
+.color-picker {
+display: grid;
+grid-template-columns: repeat(6, 1fr);
+gap: 10px;
+padding: 10px 0;
+}
+
+.color-option {
+width: 40px;
+height: 40px;
+border-radius: 20px;
+cursor: pointer;
+border: 3px solid transparent;
+transition: all 0.2s;
+}
+
+.color-option.selected {
+border-color: #000;
+transform: scale(1.1);
+}
+
+.categoria-custom-item {
+background: white;
+border-radius: 12px;
+padding: 16px;
+margin-bottom: 12px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+
+.categoria-custom-info {
+display: flex;
+align-items: center;
+gap: 12px;
+}
+
+.categoria-custom-emoji {
+font-size: 24px;
+width: 40px;
+height: 40px;
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: 20px;
+}
+
+.categoria-custom-nombre {
+font-size: 16px;
+font-weight: 600;
+}
+
+.preview-emoji {
+font-size: 48px;
+text-align: center;
+padding: 20px;
+background: #f2f2f7;
+border-radius: 12px;
+margin-bottom: 16px;
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+<h1>💰 Presupuesto</h1>
+<p>Gestiona tus finanzas personales</p>
+
+<div class="mes-selector">
+<button onclick="cambiarMes(-1)">◀</button>
+<div class="mes-actual" id="mes-actual">Diciembre 2024</div>
+<button onclick="cambiarMes(1)">▶</button>
+</div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+<div class="tab active" onclick="cambiarTab('resumen')">📊 Resumen</div>
+<div class="tab" onclick="cambiarTab('cuentas')">🏦 Cuentas</div>
+<div class="tab" onclick="cambiarTab('movimientos')">💸 Movimientos</div>
+<div class="tab" onclick="cambiarTab('presupuesto')">📈 Presupuesto</div>
+<div class="tab" onclick="cambiarTab('categorias')">🏷️ Categorías</div>
+</div>
+
+<!-- Tab: Resumen -->
+<div id="tab-resumen" class="content active">
+<div class="resumen-mes">
+<h3>Balance del Mes</h3>
+<div class="resumen-balance" id="balance-mes">€0.00</div>
+<div class="resumen-detalle">
+<span>💰 Ingresos: <strong id="ingresos-mes">€0.00</strong></span>
+<span>💸 Gastos: <strong id="gastos-mes">€0.00</strong></span>
+</div>
+</div>
+
+<div class="estadisticas-grid">
+<div class="estadistica-card">
+<div class="estadistica-label">Total en Cuentas</div>
+<div class="estadistica-valor saldo-positivo" id="total-cuentas">€0.00</div>
+</div>
+<div class="estadistica-card">
+<div class="estadistica-label">Gastos del Mes</div>
+<div class="estadistica-valor saldo-negativo" id="total-gastos-mes">€0.00</div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header">
+<div>
+<div class="card-title">Movimientos Recientes</div>
+<div class="card-subtitle">Últimos 5 movimientos</div>
+</div>
+</div>
+<div id="movimientos-recientes"></div>
+</div>
+
+<div class="card">
+<div class="card-header">
+<div>
+<div class="card-title">Presupuesto del Mes</div>
+<div class="card-subtitle">Estado actual</div>
+</div>
+</div>
+<div id="presupuesto-resumen"></div>
+</div>
+</div>
+
+<!-- Tab: Cuentas -->
+<div id="tab-cuentas" class="content">
+<div id="lista-cuentas"></div>
+<button class="btn" onclick="abrirModal('modal-cuenta')">➕ Nueva Cuenta</button>
+</div>
+
+<!-- Tab: Movimientos -->
+<div id="tab-movimientos" class="content">
+<div class="filtros-container">
+<div class="filtros-grid">
+<select class="form-select" id="filtro-cuenta" onchange="renderizarMovimientos()">
+<option value="">Todas las cuentas</option>
+</select>
+<select class="form-select" id="filtro-tipo" onchange="renderizarMovimientos()">
+<option value="">Todos los tipos</option>
+<option value="ingreso">Ingresos</option>
+<option value="gasto">Gastos</option>
+</select>
+</div>
+</div>
+
+<div id="lista-movimientos"></div>
+</div>
+
+<!-- Tab: Presupuesto -->
+<div id="tab-presupuesto" class="content">
+<div class="card">
+<div class="card-header">
+<div>
+<div class="card-title">Configurar Presupuesto</div>
+<div class="card-subtitle">Define límites mensuales</div>
+</div>
+</div>
+<button class="btn" onclick="abrirModalPresupuesto()">⚙️ Configurar Presupuesto</button>
+</div>
+
+<div id="lista-presupuestos"></div>
+</div>
+
+<!-- Tab: Categorías -->
+<div id="tab-categorias" class="content">
+<div class="card">
+<div class="card-header">
+<div>
+<div class="card-title">Categorías Personalizadas</div>
+<div class="card-subtitle">Gestiona tus categorías</div>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+<button class="btn" onclick="abrirModalNuevaCategoria('ingreso')">➕ Nueva de Ingreso</button>
+<button class="btn btn-warning" onclick="abrirModalNuevaCategoria('gasto')">➕ Nueva de Gasto</button>
+</div>
+</div>
+
+<div id="lista-categorias-custom"></div>
+</div>
+
+<!-- FAB -->
+<button class="fab" onclick="abrirModalMovimiento()">+</button>
+
+<!-- Modal: Nueva Cuenta -->
+<div id="modal-cuenta" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h2 class="modal-titulo">Nueva Cuenta</h2>
+<button class="btn-cerrar" onclick="cerrarModal('modal-cuenta')">✕</button>
+</div>
+
+<div class="form-group">
+<label class="form-label">Nombre de la cuenta</label>
+<input type="text" class="form-input" id="nombre-cuenta" placeholder="Ej: Cuenta Principal">
+</div>
+
+<div class="form-group">
+<label class="form-label">Banco</label>
+<input type="text" class="form-input" id="banco-cuenta" placeholder="Ej: BBVA">
+</div>
+
+<div class="form-group">
+<label class="form-label">Saldo inicial</label>
+<input type="number" class="form-input" id="saldo-cuenta" placeholder="0.00" step="0.01">
+</div>
+
+<button class="btn" onclick="agregarCuenta()">Crear Cuenta</button>
+</div>
+</div>
+
+<!-- Modal: Editar Cuenta -->
+<div id="modal-editar-cuenta" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h2 class="modal-titulo">Editar Cuenta</h2>
+<button class="btn-cerrar" onclick="cerrarModal('modal-editar-cuenta')">✕</button>
+</div>
+
+<div class="form-group">
+<label class="form-label">Nombre de la cuenta</label>
+<input type="text" class="form-input" id="editar-nombre-cuenta">
+</div>
+
+<div class="form-group">
+<label class="form-label">Banco</label>
+<input type="text" class="form-input" id="editar-banco-cuenta">
+</div>
+
+<div class="form-group">
+<label class="form-label">Saldo actual</label>
+<input type="number" class="form-input" id="editar-saldo-cuenta" step="0.01">
+</div>
+
+<button class="btn" onclick="guardarEdicionCuenta()">Guardar Cambios</button>
+<button class="btn btn-danger" onclick="eliminarCuenta()" style="margin-top: 10px;">Eliminar Cuenta</button>
+</div>
+</div>
+
+<!-- Modal: Nuevo Movimiento -->
+<div id="modal-movimiento" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h2 class="modal-titulo">Nuevo Movimiento</h2>
+<button class="btn-cerrar" onclick="cerrarModal('modal-movimiento')">✕</button>
+</div>
+
+<div class="form-group">
+<label class="form-label">Tipo</label>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+<button class="btn btn-success" id="btn-ingreso" onclick="seleccionarTipo('ingreso')">💰 Ingreso</button>
+<button class="btn btn-secondary" id="btn-gasto" onclick="seleccionarTipo('gasto')">💸 Gasto</button>
+</div>
+</div>
+
+<div class="form-group">
+<label class="form-label">Cuenta</label>
+<select class="form-select" id="cuenta-movimiento">
+<option value="">Selecciona una cuenta</option>
+</select>
+</div>
+
+<div class="form-group">
+<label class="form-label">Categoría</label>
+<button class="btn btn-secondary" onclick="abrirSelectorCategoria()">
+<span id="categoria-seleccionada">Seleccionar categoría</span>
+</button>
+</div>
+
+<div class="form-group">
+<label class="form-label">Monto</label>
+<input type="number" class="form-input" id="monto-movimiento" placeholder="0.00" step="0.01">
+</div>
+
+<div class="form-group">
+<label class="form-label">Descripción (opcional)</label>
+<input type="text" class="form-input" id="descripcion-movimiento" placeholder="Ej: Compra supermercado">
+</div>
+
+<div class="form-group">
+<label class="form-label">Fecha</label>
+<input type="date" class="form-input" id="fecha-movimiento">
+</div>
+
+<button class="btn" onclick="agregarMovimiento()">Registrar Movimiento</button>
+</div>
+</div>
+
+<!-- Modal: Selector de Categoría -->
+<div id="modal-categoria" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h2 class="modal-titulo">Seleccionar Categoría</h2>
+<button class="btn-cerrar" onclick="cerrarModal('modal-categoria')">✕</button>
+</div>
+
+<div id="categorias-disponibles"></div>
+</div>
+</div>
+
+<!-- Modal: Configurar Presupuesto -->
+<div id="modal-presupuesto" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h2 class="modal-titulo">Configurar Presupuesto</h2>
+<button class="btn-cerrar" onclick="cerrarModal('modal-presupuesto')">✕</button>
+</div>
+
+<div id="config-presupuesto"></div>
+</div>
+</div>
+
+<!-- Modal: Nueva Categoría -->
+<div id="modal-nueva-categoria" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h2 class="modal-titulo">Nueva Categoría</h2>
+<button class="btn-cerrar" onclick="cerrarModal('modal-nueva-categoria')">✕</button>
+</div>
+
+<div class="preview-emoji" id="emoji-preview">🎯</div>
+
+<div class="form-group">
+<label class="form-label">Nombre de la categoría</label>
+<input type="text" class="form-input" id="nueva-categoria-nombre" placeholder="Ej: Gimnasio">
+</div>
+
+<div class="form-group">
+<label class="form-label">Selecciona un emoji</label>
+<div class="emoji-picker" id="emoji-picker"></div>
+<input type="hidden" id="nueva-categoria-emoji" value="🎯">
+</div>
+
+<div class="form-group">
+<label class="form-label">Selecciona un color</label>
+<div class="color-picker" id="color-picker"></div>
+<input type="hidden" id="nueva-categoria-color">
+</div>
+
+<button class="btn" onclick="crearCategoria()">Crear Categoría</button>
+</div>
+</div>
+
+<script>
+// ============================================
+// DATOS Y ESTADO GLOBAL
+// ============================================
+
+let cuentas = [];
+let movimientos = [];
+let presupuestosMensuales = {};
+let categoriasCustom = { ingresos: [], gastos: [] };
+
+// Categorías predefinidas (se combinarán con las custom)
+const categoriasIngresosPredefinidas = [
+    { nombre: 'Salario', emoji: '💼', color: '#34C759' },
+    { nombre: 'Freelance', emoji: '💻', color: '#007AFF' },
+    { nombre: 'Inversiones', emoji: '📈', color: '#5856D6' },
+    { nombre: 'Alquiler', emoji: '🏠', color: '#FF9500' },
+    { nombre: 'Venta', emoji: '🛒', color: '#FF2D55' },
+    { nombre: 'Regalo', emoji: '🎁', color: '#FF3B30' },
+    { nombre: 'Reembolso', emoji: '💰', color: '#32ADE6' },
+    { nombre: 'Bono', emoji: '🎯', color: '#FFD60A' },
+    { nombre: 'Otros', emoji: '📦', color: '#8E8E93' }
+];
+
+const categoriasGastosPredefinidas = [
+    { nombre: 'Alimentación', emoji: '🍔', color: '#FF9500' },
+    { nombre: 'Transporte', emoji: '🚗', color: '#007AFF' },
+    { nombre: 'Vivienda', emoji: '🏠', color: '#5856D6' },
+    { nombre: 'Salud', emoji: '⚕️', color: '#FF3B30' },
+    { nombre: 'Entretenimiento', emoji: '🎬', color: '#FF2D55' },
+    { nombre: 'Educación', emoji: '📚', color: '#32ADE6' },
+    { nombre: 'Compras', emoji: '🛍️', color: '#FFD60A' },
+    { nombre: 'Servicios', emoji: '💡', color: '#34C759' },
+    { nombre: 'Viajes', emoji: '✈️', color: '#BF5AF2' },
+    { nombre: 'Mascotas', emoji: '🐕', color: '#FF6482' },
+    { nombre: 'Regalos', emoji: '🎁', color: '#FF453A' },
+    { nombre: 'Seguros', emoji: '🛡️', color: '#64D2FF' },
+    { nombre: 'Otros', emoji: '📦', color: '#8E8E93' }
+];
+
+// Emojis y colores disponibles para categorías custom
+const emojisDisponibles = [
+    '🎯', '💡', '🔧', '🎨', '🎭', '🎪', '🎢', '🎡', '🎠', '🎰',
+    '🏋️', '⚽', '🏀', '⚾', '🎾', '🏐', '🏈', '🏉', '🎱', '🏓',
+    '🎸', '🎹', '🎺', '🎻', '🥁', '🎤', '🎧', '🎮', '🕹️', '🎲',
+    '☕', '🍕', '🍔', '🌮', '🍟', '🍿', '🧁', '🍰', '🎂', '🍪',
+    '💼', '💻', '⌨️', '🖱️', '🖨️', '📱', '☎️', '📞', '📠', '📺',
+    '🏥', '💊', '💉', '🩺', '🩹', '🌡️', '🧪', '🔬', '🔭', '🩻'
+];
+
+const paletaColores = [
+    '#FF3B30', '#FF9500', '#FFD60A', '#34C759', '#32ADE6',
+    '#007AFF', '#5856D6', '#BF5AF2', '#FF2D55', '#A2845E'
+];
+
+let mesActual = new Date();
+let tipoMovimientoSeleccionado = 'gasto';
+let categoriaSeleccionada = '';
+let cuentaEditando = null;
+let tipoCategoriaNueva = 'gasto';
+
+// ============================================
+// FUNCIONES DE CATEGORÍAS
+// ============================================
+
+function obtenerCategoriasIngresos() {
+    return [...categoriasIngresosPredefinidas, ...categoriasCustom.ingresos];
+}
+
+function obtenerCategoriasGastos() {
+    return [...categoriasGastosPredefinidas, ...categoriasCustom.gastos];
+}
+
+function obtenerCategoriaCompleta(nombreCategoria, tipo) {
+    const categorias = tipo === 'ingreso' ? obtenerCategoriasIngresos() : obtenerCategoriasGastos();
+    return categorias.find(cat => cat.nombre === nombreCategoria) || { nombre: nombreCategoria, emoji: '❓', color: '#8E8E93' };
+}
+
+function actualizarTodasLasCategorias() {
+    // Esta función se llama después de agregar/eliminar categorías custom
+    // para que se reflejen en todos los selectores
+}
+
+// ============================================
+// FUNCIONES DE NAVEGACIÓN Y UI
+// ============================================
+
+function cambiarTab(tabName) {
+    // Guardar la pestaña activa
+    localStorage.setItem('ultimaTabActiva', tabName);
+    
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.content').forEach(content => content.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    document.getElementById('tab-' + tabName).classList.add('active');
+    
+    if (tabName === 'resumen') {
+        actualizarResumen();
+    } else if (tabName === 'cuentas') {
+        renderizarCuentas();
+    } else if (tabName === 'movimientos') {
+        actualizarSelectorCuentas();
+        renderizarMovimientos();
+    } else if (tabName === 'presupuesto') {
+        renderizarPresupuesto();
+    } else if (tabName === 'categorias') {
+        renderizarCategoriasCustom();
+    }
+}
+
+function cambiarMes(direccion) {
+    mesActual = new Date(mesActual.getFullYear(), mesActual.getMonth() + direccion, 1);
+    
+    // Guardar el mes seleccionado
+    localStorage.setItem('ultimoMesSeleccionado', mesActual.toISOString());
+    
+    actualizarMesSelector();
+    actualizarTodo();
+}
+
+function actualizarMesSelector() {
+    const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    document.getElementById('mes-actual').textContent = 
+        `${meses[mesActual.getMonth()]} ${mesActual.getFullYear()}`;
+}
+
+function actualizarTodo() {
+    actualizarResumen();
+    renderizarCuentas();
+    renderizarMovimientos();
+    renderizarPresupuesto();
+}
+
+// ============================================
+// FUNCIONES DE MODALES
+// ============================================
+
+function abrirModal(modalId) {
+    document.getElementById(modalId).classList.add('active');
+    
+    if (modalId === 'modal-cuenta') {
+        document.getElementById('nombre-cuenta').value = '';
+        document.getElementById('banco-cuenta').value = '';
+        document.getElementById('saldo-cuenta').value = '';
+    } else if (modalId === 'modal-movimiento') {
+        actualizarSelectorCuentasModal();
+        document.getElementById('monto-movimiento').value = '';
+        document.getElementById('descripcion-movimiento').value = '';
+        document.getElementById('fecha-movimiento').value = new Date().toISOString().split('T')[0];
+        categoriaSeleccionada = '';
+        document.getElementById('categoria-seleccionada').textContent = 'Seleccionar categoría';
+        seleccionarTipo('gasto');
+    }
+}
+
+function cerrarModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+}
+
+function abrirModalMovimiento() {
+    abrirModal('modal-movimiento');
+}
+
+function abrirSelectorCategoria() {
+    const categoriasDisponibles = document.getElementById('categorias-disponibles');
+    categoriasDisponibles.innerHTML = '';
+    
+    const categorias = tipoMovimientoSeleccionado === 'ingreso' ? 
+        obtenerCategoriasIngresos() : obtenerCategoriasGastos();
+    
+    const titulo = document.createElement('div');
+    titulo.className = 'seccion-titulo';
+    titulo.textContent = tipoMovimientoSeleccionado === 'ingreso' ? 'INGRESOS' : 'GASTOS';
+    categoriasDisponibles.appendChild(titulo);
+    
+    const grid = document.createElement('div');
+    grid.className = 'lista-categorias';
+    
+    categorias.forEach(cat => {
+        const div = document.createElement('div');
+        div.className = 'categoria-opcion';
+        if (categoriaSeleccionada === cat.nombre) {
+            div.classList.add('selected');
+        }
+        div.onclick = () => seleccionarCategoria(cat.nombre);
+        div.innerHTML = `
+            <div class="categoria-emoji">${cat.emoji}</div>
+            <div class="categoria-nombre">${cat.nombre}</div>
+        `;
+        grid.appendChild(div);
+    });
+    
+    categoriasDisponibles.appendChild(grid);
+    abrirModal('modal-categoria');
+}
+
+function seleccionarCategoria(categoria) {
+    categoriaSeleccionada = categoria;
+    const categorias = tipoMovimientoSeleccionado === 'ingreso' ? 
+        obtenerCategoriasIngresos() : obtenerCategoriasGastos();
+    const catInfo = categorias.find(c => c.nombre === categoria);
+    document.getElementById('categoria-seleccionada').textContent = 
+        `${catInfo.emoji} ${categoria}`;
+    cerrarModal('modal-categoria');
+}
+
+function seleccionarTipo(tipo) {
+    tipoMovimientoSeleccionado = tipo;
+    
+    document.getElementById('btn-ingreso').className = 
+        tipo === 'ingreso' ? 'btn btn-success' : 'btn btn-secondary';
+    document.getElementById('btn-gasto').className = 
+        tipo === 'gasto' ? 'btn btn-danger' : 'btn btn-secondary';
+    
+    categoriaSeleccionada = '';
+    document.getElementById('categoria-seleccionada').textContent = 'Seleccionar categoría';
+}
+
+// ============================================
+// FUNCIONES DE CUENTAS
+// ============================================
+
+function agregarCuenta() {
+    const nombre = document.getElementById('nombre-cuenta').value.trim();
+    const banco = document.getElementById('banco-cuenta').value.trim();
+    const saldo = parseFloat(document.getElementById('saldo-cuenta').value) || 0;
+    
+    if (!nombre) {
+        alert('Por favor, ingresa un nombre para la cuenta');
+        return;
+    }
+    
+    const nuevaCuenta = {
+        id: Date.now(),
+        nombre,
+        banco,
+        saldoInicial: saldo,
+        saldoActual: saldo
+    };
+    
+    cuentas.push(nuevaCuenta);
+    guardarDatos();
+    renderizarCuentas();
+    cerrarModal('modal-cuenta');
+    actualizarTodo();
+}
+
+function renderizarCuentas() {
+    const container = document.getElementById('lista-cuentas');
+    
+    if (cuentas.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">🏦</div>
+                <div class="empty-state-text">No tienes cuentas registradas</div>
+                <p style="color: #8e8e93; font-size: 14px;">Crea tu primera cuenta para comenzar</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = cuentas.map(cuenta => {
+        const saldoClass = cuenta.saldoActual >= 0 ? 'saldo-positivo' : 'saldo-negativo';
+        
+        return `
+            <div class="cuenta-item">
+                <div class="cuenta-header">
+                    <div>
+                        <div class="cuenta-nombre">
+                            🏦 ${cuenta.nombre}
+                        </div>
+                        <div class="cuenta-banco">${cuenta.banco || 'Sin banco'}</div>
+                    </div>
+                    <div class="cuenta-opciones">
+                        <button class="btn-icono" onclick="abrirEdicionCuenta(${cuenta.id})" title="Editar">✏️</button>
+                    </div>
+                </div>
+                
+                <div class="cuenta-saldo ${saldoClass}">
+                    €${cuenta.saldoActual.toFixed(2)}
+                </div>
+                
+                <div class="cuenta-info-grid">
+                    <div class="cuenta-info-item">
+                        <div class="cuenta-info-label">Saldo Inicial</div>
+                        <div class="cuenta-info-valor">€${cuenta.saldoInicial.toFixed(2)}</div>
+                    </div>
+                    <div class="cuenta-info-item">
+                        <div class="cuenta-info-label">Balance</div>
+                        <div class="cuenta-info-valor ${saldoClass}">
+                            €${(cuenta.saldoActual - cuenta.saldoInicial).toFixed(2)}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function abrirEdicionCuenta(cuentaId) {
+    const cuenta = cuentas.find(c => c.id === cuentaId);
+    if (!cuenta) return;
+    
+    cuentaEditando = cuenta;
+    document.getElementById('editar-nombre-cuenta').value = cuenta.nombre;
+    document.getElementById('editar-banco-cuenta').value = cuenta.banco || '';
+    document.getElementById('editar-saldo-cuenta').value = cuenta.saldoActual;
+    
+    abrirModal('modal-editar-cuenta');
+}
+
+function guardarEdicionCuenta() {
+    if (!cuentaEditando) return;
+    
+    cuentaEditando.nombre = document.getElementById('editar-nombre-cuenta').value.trim();
+    cuentaEditando.banco = document.getElementById('editar-banco-cuenta').value.trim();
+    cuentaEditando.saldoActual = parseFloat(document.getElementById('editar-saldo-cuenta').value) || 0;
+    
+    guardarDatos();
+    renderizarCuentas();
+    actualizarTodo();
+    cerrarModal('modal-editar-cuenta');
+    cuentaEditando = null;
+}
+
+function eliminarCuenta() {
+    if (!cuentaEditando) return;
+    
+    if (!confirm(`¿Estás seguro de eliminar la cuenta "${cuentaEditando.nombre}"?`)) {
+        return;
+    }
+    
+    // Eliminar movimientos asociados
+    movimientos = movimientos.filter(m => m.cuentaId !== cuentaEditando.id);
+    
+    // Eliminar cuenta
+    cuentas = cuentas.filter(c => c.id !== cuentaEditando.id);
+    
+    guardarDatos();
+    renderizarCuentas();
+    actualizarTodo();
+    cerrarModal('modal-editar-cuenta');
+    cuentaEditando = null;
+}
+
+function calcularSaldoCuenta(cuentaId) {
+    const cuenta = cuentas.find(c => c.id === cuentaId);
+    if (!cuenta) return 0;
+    
+    let saldo = cuenta.saldoInicial;
+    
+    const movimientosCuenta = movimientos.filter(m => m.cuentaId === cuentaId);
+    movimientosCuenta.forEach(mov => {
+        if (mov.tipo === 'ingreso') {
+            saldo += mov.monto;
+        } else {
+            saldo -= mov.monto;
+        }
+    });
+    
+    cuenta.saldoActual = saldo;
+    return saldo;
+}
+
+function actualizarSaldosCuentas() {
+    cuentas.forEach(cuenta => {
+        calcularSaldoCuenta(cuenta.id);
+    });
+}
+
+// ============================================
+// FUNCIONES DE MOVIMIENTOS
+// ============================================
+
+function agregarMovimiento() {
+    const cuentaId = parseInt(document.getElementById('cuenta-movimiento').value);
+    const monto = parseFloat(document.getElementById('monto-movimiento').value);
+    const descripcion = document.getElementById('descripcion-movimiento').value.trim();
+    const fecha = document.getElementById('fecha-movimiento').value;
+    
+    if (!cuentaId || isNaN(monto) || monto <= 0) {
+        alert('Por favor, completa todos los campos correctamente');
+        return;
+    }
+    
+    if (!categoriaSeleccionada) {
+        alert('Por favor, selecciona una categoría');
+        return;
+    }
+    
+    const nuevoMovimiento = {
+        id: Date.now(),
+        tipo: tipoMovimientoSeleccionado,
+        cuentaId,
+        categoria: categoriaSeleccionada,
+        monto,
+        descripcion,
+        fecha: fecha || new Date().toISOString().split('T')[0]
+    };
+    
+    movimientos.push(nuevoMovimiento);
+    
+    // Actualizar saldo de la cuenta
+    actualizarSaldosCuentas();
+    
+    guardarDatos();
+    cerrarModal('modal-movimiento');
+    actualizarTodo();
+}
+
+function renderizarMovimientos() {
+    const container = document.getElementById('lista-movimientos');
+    const filtroCuenta = document.getElementById('filtro-cuenta').value;
+    const filtroTipo = document.getElementById('filtro-tipo').value;
+    
+    // Filtrar movimientos del mes actual
+    const movimientosMes = movimientos.filter(mov => {
+        const fechaMov = new Date(mov.fecha);
+        const mismaMes = fechaMov.getMonth() === mesActual.getMonth() && 
+                        fechaMov.getFullYear() === mesActual.getFullYear();
+        
+        const cumpleFiltros = 
+            (!filtroCuenta || mov.cuentaId === parseInt(filtroCuenta)) &&
+            (!filtroTipo || mov.tipo === filtroTipo);
+        
+        return mismaMes && cumpleFiltros;
+    });
+    
+    if (movimientosMes.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">💸</div>
+                <div class="empty-state-text">No hay movimientos este mes</div>
+                <p style="color: #8e8e93; font-size: 14px;">Registra tu primer movimiento</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Agrupar por fecha
+    const porFecha = {};
+    movimientosMes.forEach(mov => {
+        const fecha = mov.fecha;
+        if (!porFecha[fecha]) {
+            porFecha[fecha] = [];
+        }
+        porFecha[fecha].push(mov);
+    });
+    
+    // Ordenar fechas descendente
+    const fechasOrdenadas = Object.keys(porFecha).sort((a, b) => new Date(b) - new Date(a));
+    
+    container.innerHTML = fechasOrdenadas.map(fecha => {
+        const movs = porFecha[fecha];
+        const fechaObj = new Date(fecha + 'T00:00:00');
+        const opciones = { weekday: 'long', day: 'numeric', month: 'long' };
+        const fechaFormateada = fechaObj.toLocaleDateString('es-ES', opciones);
+        
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">${fechaFormateada}</div>
+                </div>
+                ${movs.map(mov => {
+                    const cuenta = cuentas.find(c => c.id === mov.cuentaId);
+                    const catInfo = obtenerCategoriaCompleta(mov.categoria, mov.tipo);
+                    const claseColor = mov.tipo === 'ingreso' ? 'ingreso' : 'gasto';
+                    
+                    return `
+                        <div class="movimiento-item" onclick="eliminarMovimiento(${mov.id})">
+                            <div class="movimiento-info">
+                                <div class="movimiento-categoria">
+                                    <span>${catInfo.emoji}</span>
+                                    <span>${mov.categoria}</span>
+                                </div>
+                                <div class="movimiento-descripcion">
+                                    ${mov.descripcion || cuenta?.nombre || 'Sin descripción'}
+                                </div>
+                            </div>
+                            <div class="movimiento-monto ${claseColor}">
+                                ${mov.tipo === 'ingreso' ? '+' : '-'}€${mov.monto.toFixed(2)}
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }).join('');
+}
+
+function eliminarMovimiento(movId) {
+    if (!confirm('¿Eliminar este movimiento?')) return;
+    
+    movimientos = movimientos.filter(m => m.id !== movId);
+    actualizarSaldosCuentas();
+    guardarDatos();
+    actualizarTodo();
+}
+
+function actualizarSelectorCuentas() {
+    const selector = document.getElementById('filtro-cuenta');
+    selector.innerHTML = '<option value="">Todas las cuentas</option>';
+    
+    cuentas.forEach(cuenta => {
+        const option = document.createElement('option');
+        option.value = cuenta.id;
+        option.textContent = cuenta.nombre;
+        selector.appendChild(option);
+    });
+}
+
+function actualizarSelectorCuentasModal() {
+    const selector = document.getElementById('cuenta-movimiento');
+    selector.innerHTML = '<option value="">Selecciona una cuenta</option>';
+    
+    cuentas.forEach(cuenta => {
+        const option = document.createElement('option');
+        option.value = cuenta.id;
+        option.textContent = cuenta.nombre;
+        selector.appendChild(option);
+    });
+}
+
+// ============================================
+// FUNCIONES DE PRESUPUESTO
+// ============================================
+
+function abrirModalPresupuesto() {
+    const container = document.getElementById('config-presupuesto');
+    const mesKey = `${mesActual.getFullYear()}-${mesActual.getMonth() + 1}`;
+    const presupuestoActual = presupuestosMensuales[mesKey] || {};
+    
+    const categorias = obtenerCategoriasGastos();
+    
+    container.innerHTML = categorias.map(cat => {
+        const montoActual = presupuestoActual[cat.nombre] || 0;
+        
+        return `
+            <div class="form-group">
+                <label class="form-label">${cat.emoji} ${cat.nombre}</label>
+                <input type="number" class="form-input" id="presupuesto-${cat.nombre}" 
+                       value="${montoActual}" step="0.01" placeholder="0.00">
+            </div>
+        `;
+    }).join('') + `
+        <button class="btn" onclick="guardarPresupuesto()">Guardar Presupuesto</button>
+    `;
+    
+    abrirModal('modal-presupuesto');
+}
+
+function guardarPresupuesto() {
+    const mesKey = `${mesActual.getFullYear()}-${mesActual.getMonth() + 1}`;
+    presupuestosMensuales[mesKey] = {};
+    
+    const categorias = obtenerCategoriasGastos();
+    categorias.forEach(cat => {
+        const input = document.getElementById(`presupuesto-${cat.nombre}`);
+        if (input) {
+            const valor = parseFloat(input.value) || 0;
+            if (valor > 0) {
+                presupuestosMensuales[mesKey][cat.nombre] = valor;
+            }
+        }
+    });
+    
+    guardarDatos();
+    renderizarPresupuesto();
+    cerrarModal('modal-presupuesto');
+}
+
+function renderizarPresupuesto() {
+    const container = document.getElementById('lista-presupuestos');
+    const mesKey = `${mesActual.getFullYear()}-${mesActual.getMonth() + 1}`;
+    const presupuestoActual = presupuestosMensuales[mesKey] || {};
+    
+    if (Object.keys(presupuestoActual).length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">📊</div>
+                <div class="empty-state-text">No hay presupuesto configurado</div>
+                <p style="color: #8e8e93; font-size: 14px;">Define límites para tus gastos</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Calcular gastos por categoría del mes
+    const gastosPorCategoria = {};
+    movimientos.forEach(mov => {
+        if (mov.tipo === 'gasto') {
+            const fechaMov = new Date(mov.fecha);
+            if (fechaMov.getMonth() === mesActual.getMonth() && 
+                fechaMov.getFullYear() === mesActual.getFullYear()) {
+                gastosPorCategoria[mov.categoria] = (gastosPorCategoria[mov.categoria] || 0) + mov.monto;
+            }
+        }
+    });
+    
+    container.innerHTML = Object.entries(presupuestoActual).map(([categoria, limite]) => {
+        const gastado = gastosPorCategoria[categoria] || 0;
+        const porcentaje = (gastado / limite) * 100;
+        const catInfo = obtenerCategoriaCompleta(categoria, 'gasto');
+        
+        let barraClass = '';
+        let estadoBadge = '';
+        
+        if (porcentaje >= 100) {
+            barraClass = 'excedido';
+            estadoBadge = '<span class="badge badge-danger">Excedido</span>';
+        } else if (porcentaje >= 80) {
+            barraClass = 'alerta';
+            estadoBadge = '<span class="badge badge-warning">Cerca del límite</span>';
+        } else {
+            estadoBadge = '<span class="badge badge-success">OK</span>';
+        }
+        
+        return `
+            <div class="presupuesto-item">
+                <div class="presupuesto-header">
+                    <div class="presupuesto-categoria">
+                        <span style="font-size: 24px;">${catInfo.emoji}</span>
+                        <span>${categoria}</span>
+                    </div>
+                    ${estadoBadge}
+                </div>
+                
+                <div class="presupuesto-monto">
+                    <div class="presupuesto-asignado">Presupuesto: €${limite.toFixed(2)}</div>
+                    <div class="presupuesto-gastado ${gastado > limite ? 'saldo-negativo' : ''}">
+                        €${gastado.toFixed(2)}
+                    </div>
+                </div>
+                
+                <div class="barra-progreso">
+                    <div class="barra-progreso-fill ${barraClass}" 
+                         style="width: ${Math.min(porcentaje, 100)}%"></div>
+                </div>
+                
+                <div style="text-align: right; margin-top: 6px; font-size: 12px; color: #8e8e93;">
+                    ${porcentaje.toFixed(1)}% utilizado
+                    ${porcentaje < 100 ? 
+                        `• Disponible: €${(limite - gastado).toFixed(2)}` : 
+                        `• Exceso: €${(gastado - limite).toFixed(2)}`
+                    }
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ============================================
+// FUNCIONES DE RESUMEN
+// ============================================
+
+function actualizarResumen() {
+    // Calcular totales del mes
+    const movimientosMes = movimientos.filter(mov => {
+        const fechaMov = new Date(mov.fecha);
+        return fechaMov.getMonth() === mesActual.getMonth() && 
+               fechaMov.getFullYear() === mesActual.getFullYear();
+    });
+    
+    const ingresosMes = movimientosMes
+        .filter(m => m.tipo === 'ingreso')
+        .reduce((sum, m) => sum + m.monto, 0);
+    
+    const gastosMes = movimientosMes
+        .filter(m => m.tipo === 'gasto')
+        .reduce((sum, m) => sum + m.monto, 0);
+    
+    const balanceMes = ingresosMes - gastosMes;
+    
+    const totalCuentas = cuentas.reduce((sum, c) => sum + c.saldoActual, 0);
+    
+    // Actualizar UI
+    document.getElementById('balance-mes').textContent = `€${balanceMes.toFixed(2)}`;
+    document.getElementById('balance-mes').className = `resumen-balance ${balanceMes >= 0 ? 'saldo-positivo' : 'saldo-negativo'}`;
+    
+    document.getElementById('ingresos-mes').textContent = `€${ingresosMes.toFixed(2)}`;
+    document.getElementById('gastos-mes').textContent = `€${gastosMes.toFixed(2)}`;
+    document.getElementById('total-cuentas').textContent = `€${totalCuentas.toFixed(2)}`;
+    document.getElementById('total-gastos-mes').textContent = `€${gastosMes.toFixed(2)}`;
+    
+    // Movimientos recientes
+    const movimientosRecientes = movimientosMes
+        .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+        .slice(0, 5);
+    
+    const containerRecientes = document.getElementById('movimientos-recientes');
+    if (movimientosRecientes.length === 0) {
+        containerRecientes.innerHTML = '<div style="text-align: center; color: #8e8e93; padding: 20px;">No hay movimientos este mes</div>';
+    } else {
+        containerRecientes.innerHTML = movimientosRecientes.map(mov => {
+            const cuenta = cuentas.find(c => c.id === mov.cuentaId);
+            const catInfo = obtenerCategoriaCompleta(mov.categoria, mov.tipo);
+            const claseColor = mov.tipo === 'ingreso' ? 'ingreso' : 'gasto';
+            
+            return `
+                <div class="movimiento-item">
+                    <div class="movimiento-info">
+                        <div class="movimiento-categoria">
+                            <span>${catInfo.emoji}</span>
+                            <span>${mov.categoria}</span>
+                        </div>
+                        <div class="movimiento-descripcion">
+                            ${mov.descripcion || cuenta?.nombre || 'Sin descripción'}
+                        </div>
+                    </div>
+                    <div class="movimiento-monto ${claseColor}">
+                        ${mov.tipo === 'ingreso' ? '+' : '-'}€${mov.monto.toFixed(2)}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // Resumen de presupuesto
+    const mesKey = `${mesActual.getFullYear()}-${mesActual.getMonth() + 1}`;
+    const presupuestoActual = presupuestosMensuales[mesKey] || {};
+    
+    const containerPresupuesto = document.getElementById('presupuesto-resumen');
+    
+    if (Object.keys(presupuestoActual).length === 0) {
+        containerPresupuesto.innerHTML = '<div style="text-align: center; color: #8e8e93; padding: 20px;">No hay presupuesto configurado</div>';
+    } else {
+        const gastosPorCategoria = {};
+        movimientosMes.filter(m => m.tipo === 'gasto').forEach(mov => {
+            gastosPorCategoria[mov.categoria] = (gastosPorCategoria[mov.categoria] || 0) + mov.monto;
+        });
+        
+        const items = Object.entries(presupuestoActual)
+            .sort((a, b) => {
+                const gastadoA = gastosPorCategoria[a[0]] || 0;
+                const gastadoB = gastosPorCategoria[b[0]] || 0;
+                return (gastadoB / b[1]) - (gastadoA / a[1]);
+            })
+            .slice(0, 3);
+        
+        containerPresupuesto.innerHTML = items.map(([categoria, limite]) => {
+            const gastado = gastosPorCategoria[categoria] || 0;
+            const porcentaje = (gastado / limite) * 100;
+            const catInfo = obtenerCategoriaCompleta(categoria, 'gasto');
+            
+            let barraClass = '';
+            if (porcentaje >= 100) barraClass = 'excedido';
+            else if (porcentaje >= 80) barraClass = 'alerta';
+            
+            return `
+                <div style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                        <span style="font-size: 14px; font-weight: 600;">${catInfo.emoji} ${categoria}</span>
+                        <span style="font-size: 14px; color: #8e8e93;">€${gastado.toFixed(2)} / €${limite.toFixed(2)}</span>
+                    </div>
+                    <div class="barra-progreso">
+                        <div class="barra-progreso-fill ${barraClass}" 
+                             style="width: ${Math.min(porcentaje, 100)}%"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+}
+
+// ============================================
+// FUNCIONES DE CATEGORÍAS PERSONALIZADAS
+// ============================================
+
+function renderizarCategoriasCustom() {
+    const container = document.getElementById('lista-categorias-custom');
+    
+    const hayIngresos = categoriasCustom.ingresos.length > 0;
+    const hayGastos = categoriasCustom.gastos.length > 0;
+    
+    if (!hayIngresos && !hayGastos) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">🏷️</div>
+                <div class="empty-state-text">No tienes categorías personalizadas</div>
+                <p style="color: #8e8e93; font-size: 14px;">Crea categorías adaptadas a tus necesidades</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    
+    if (hayIngresos) {
+        html += '<div class="seccion-titulo">INGRESOS PERSONALIZADOS</div>';
+        html += categoriasCustom.ingresos.map(cat => `
+            <div class="categoria-custom-item">
+                <div class="categoria-custom-info">
+                    <div class="categoria-custom-emoji" style="background-color: ${cat.color}20;">
+                        ${cat.emoji}
+                    </div>
+                    <div class="categoria-custom-nombre">${cat.nombre}</div>
+                </div>
+                <button class="btn-icono" onclick="eliminarCategoriaCustom('ingreso', '${cat.nombre}')" title="Eliminar">
+                    🗑️
+                </button>
+            </div>
+        `).join('');
+    }
+    
+    if (hayGastos) {
+        html += '<div class="seccion-titulo">GASTOS PERSONALIZADOS</div>';
+        html += categoriasCustom.gastos.map(cat => `
+            <div class="categoria-custom-item">
+                <div class="categoria-custom-info">
+                    <div class="categoria-custom-emoji" style="background-color: ${cat.color}20;">
+                        ${cat.emoji}
+                    </div>
+                    <div class="categoria-custom-nombre">${cat.nombre}</div>
+                </div>
+                <button class="btn-icono" onclick="eliminarCategoriaCustom('gasto', '${cat.nombre}')" title="Eliminar">
+                    🗑️
+                </button>
+            </div>
+        `).join('');
+    }
+    
+    container.innerHTML = html;
+}
+
+function abrirModalNuevaCategoria(tipo) {
+    tipoCategoriaNueva = tipo;
+    
+    document.getElementById('nueva-categoria-nombre').value = '';
+    document.getElementById('nueva-categoria-emoji').value = '🎯';
+    document.getElementById('emoji-preview').textContent = '🎯';
+    
+    generarEmojiPicker();
+    generarColorPicker();
+    
+    abrirModal('modal-nueva-categoria');
+}
+
+function generarEmojiPicker() {
+    const picker = document.getElementById('emoji-picker');
+    picker.innerHTML = '';
+    emojisDisponibles.forEach(emoji => {
+        const div = document.createElement('div');
+        div.className = 'emoji-option';
+        div.textContent = emoji;
+        div.onclick = () => seleccionarEmoji(emoji);
+        picker.appendChild(div);
+    });
+}
+
+function seleccionarEmoji(emoji) {
+    document.getElementById('nueva-categoria-emoji').value = emoji;
+    document.getElementById('emoji-preview').textContent = emoji;
+    document.querySelectorAll('.emoji-option').forEach(opt => {
+        opt.classList.remove('selected');
+        if (opt.textContent === emoji) opt.classList.add('selected');
+    });
+}
+
+function generarColorPicker() {
+    const picker = document.getElementById('color-picker');
+    picker.innerHTML = '';
+    paletaColores.forEach(color => {
+        const div = document.createElement('div');
+        div.className = 'color-option';
+        div.style.backgroundColor = color;
+        div.onclick = () => seleccionarColor(color);
+        picker.appendChild(div);
+    });
+    seleccionarColor(paletaColores[0]);
+}
+
+function seleccionarColor(color) {
+    document.getElementById('nueva-categoria-color').value = color;
+    document.querySelectorAll('.color-option').forEach(opt => {
+        opt.classList.remove('selected');
+        if (opt.style.backgroundColor.toUpperCase() === color.toUpperCase() || 
+            rgbToHex(opt.style.backgroundColor).toUpperCase() === color.toUpperCase()) {
+            opt.classList.add('selected');
+        }
+    });
+}
+
+function rgbToHex(rgb) {
+    if (rgb.startsWith('#')) return rgb;
+    const result = rgb.match(/\d+/g);
+    if (!result) return rgb;
+    return '#' + result.map(x => {
+        const hex = parseInt(x).toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+    }).join('').toUpperCase();
+}
+
+function crearCategoria() {
+    const nombre = document.getElementById('nueva-categoria-nombre').value.trim();
+    const emoji = document.getElementById('nueva-categoria-emoji').value;
+    const color = document.getElementById('nueva-categoria-color').value;
+    
+    if (!nombre) {
+        alert('Por favor, ingresa un nombre para la categoría');
+        return;
+    }
+    
+    const categorias = tipoCategoriaNueva === 'ingreso' ? obtenerCategoriasIngresos() : obtenerCategoriasGastos();
+    if (categorias.find(cat => cat.nombre === nombre)) {
+        alert('Ya existe una categoría con ese nombre');
+        return;
+    }
+    
+    const nuevaCategoria = { nombre, emoji, color };
+    
+    if (tipoCategoriaNueva === 'ingreso') {
+        categoriasCustom.ingresos.push(nuevaCategoria);
+    } else {
+        categoriasCustom.gastos.push(nuevaCategoria);
+    }
+    
+    actualizarTodasLasCategorias();
+    guardarDatos();
+    renderizarCategoriasCustom();
+    cerrarModal('modal-nueva-categoria');
+    alert(`Categoría "${nombre}" creada exitosamente`);
+}
+
+function eliminarCategoriaCustom(tipo, nombreCategoria) {
+    if (!confirm(`¿Estás seguro de eliminar la categoría "${nombreCategoria}"?`)) return;
+    
+    if (tipo === 'ingreso') {
+        categoriasCustom.ingresos = categoriasCustom.ingresos.filter(cat => cat.nombre !== nombreCategoria);
+    } else {
+        categoriasCustom.gastos = categoriasCustom.gastos.filter(cat => cat.nombre !== nombreCategoria);
+    }
+    
+    actualizarTodasLasCategorias();
+    guardarDatos();
+    renderizarCategoriasCustom();
+    actualizarTodo();
+    alert(`Categoría "${nombreCategoria}" eliminada exitosamente`);
+}
+
+// ============================================
+// FUNCIONES DE PERSISTENCIA
+// ============================================
+
+function guardarDatos() {
+    localStorage.setItem('cuentas', JSON.stringify(cuentas));
+    localStorage.setItem('movimientos', JSON.stringify(movimientos));
+    localStorage.setItem('presupuestosMensuales', JSON.stringify(presupuestosMensuales));
+    localStorage.setItem('categoriasCustom', JSON.stringify(categoriasCustom));
+}
+
+function cargarDatos() {
+    const cuentasGuardadas = localStorage.getItem('cuentas');
+    const movimientosGuardados = localStorage.getItem('movimientos');
+    const presupuestosGuardados = localStorage.getItem('presupuestosMensuales');
+    const categoriasGuardadas = localStorage.getItem('categoriasCustom');
+    const ultimoMesGuardado = localStorage.getItem('ultimoMesSeleccionado');
+    
+    if (cuentasGuardadas) {
+        cuentas = JSON.parse(cuentasGuardadas);
+        actualizarSaldosCuentas();
+    }
+    
+    if (movimientosGuardados) {
+        movimientos = JSON.parse(movimientosGuardados);
+    }
+    
+    if (presupuestosGuardados) {
+        presupuestosMensuales = JSON.parse(presupuestosGuardados);
+    }
+    
+    if (categoriasGuardadas) {
+        categoriasCustom = JSON.parse(categoriasGuardadas);
+    }
+    
+    if (ultimoMesGuardado) {
+        mesActual = new Date(ultimoMesGuardado);
+    }
+}
+
+// ============================================
+// INICIALIZACIÓN
+// ============================================
+
+function inicializar() {
+    // Limpieza automática si el archivo está limpio
+    const archivoLimpio = cuentas.length === 0 && movimientos.length === 0 && Object.keys(presupuestosMensuales).length === 0;
+    const hayDatosEnStorage = localStorage.getItem('cuentas') || localStorage.getItem('movimientos') || localStorage.getItem('presupuestosMensuales');
+    
+    if (archivoLimpio && hayDatosEnStorage) {
+        localStorage.removeItem('cuentas');
+        localStorage.removeItem('movimientos');
+        localStorage.removeItem('presupuestosMensuales');
+        localStorage.removeItem('categoriasCustom');
+        localStorage.removeItem('ultimaTabActiva');
+        localStorage.removeItem('ultimoMesSeleccionado');
+        console.log('✅ Archivo limpio detectado. localStorage limpiado automáticamente.');
+    }
+    
+    cargarDatos();
+    
+    // Posicionarse en el último mes con datos
+    if (!localStorage.getItem('ultimoMesSeleccionado') && (movimientos.length > 0 || Object.keys(presupuestosMensuales).length > 0)) {
+        let ultimaFecha = new Date(2025, 0, 1);
+        
+        if (movimientos.length > 0) {
+            movimientos.forEach(mov => {
+                const fechaMov = new Date(mov.fecha);
+                if (fechaMov > ultimaFecha) {
+                    ultimaFecha = fechaMov;
+                }
+            });
+        }
+        
+        const mesesPresupuesto = Object.keys(presupuestosMensuales);
+        if (mesesPresupuesto.length > 0) {
+            mesesPresupuesto.forEach(mesStr => {
+                const [year, month] = mesStr.split('-').map(Number);
+                const fechaPresupuesto = new Date(year, month - 1, 1);
+                if (fechaPresupuesto > ultimaFecha) {
+                    ultimaFecha = fechaPresupuesto;
+                }
+            });
+        }
+        
+        mesActual = ultimaFecha;
+    }
+    
+    actualizarMesSelector();
+    actualizarTodo();
+    
+    // Restaurar última pestaña activa
+    const ultimaTab = localStorage.getItem('ultimaTabActiva');
+    if (ultimaTab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+        
+        const tabElement = document.querySelector(`[onclick="cambiarTab('${ultimaTab}')"]`);
+        if (tabElement) {
+            tabElement.classList.add('active');
+        }
+        const contentElement = document.getElementById('tab-' + ultimaTab);
+        if (contentElement) {
+            contentElement.classList.add('active');
+        }
+        
+        if (ultimaTab === 'movimientos') {
+            actualizarSelectorCuentas();
+            renderizarMovimientos();
+        }
+        if (ultimaTab === 'presupuesto') {
+            renderizarPresupuesto();
+        }
+    }
+}
+
+// Cerrar modales al hacer clic fuera
+document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+        }
+    });
+});
+
+// Iniciar la aplicación
+inicializar();
+</script>
+
+<!-- ========== SISTEMA DE ACTUALIZACIÓN AUTOMÁTICA AUTOCONTENIDO ========== -->
+<script>
+(function() {
+    // 🔢 VERSIÓN DE LA APP - Cambiar este número para forzar actualización
+    const APP_VERSION = '2.0.0';
+    const VERSION_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutos
+    
+    // Registrar Service Worker autocontenido
+    if ('serviceWorker' in navigator) {
+        // Crear el Service Worker como Blob
+        const swCode = `
+            const CACHE_VERSION = '${APP_VERSION}';
+            const CACHE_NAME = 'presupuesto-v' + CACHE_VERSION;
+            
+            self.addEventListener('install', (event) => {
+                console.log('Service Worker instalado - versión', CACHE_VERSION);
+                self.skipWaiting();
+            });
+            
+            self.addEventListener('activate', (event) => {
+                console.log('Service Worker activado - versión', CACHE_VERSION);
+                event.waitUntil(
+                    caches.keys().then((cacheNames) => {
+                        return Promise.all(
+                            cacheNames.map((cacheName) => {
+                                if (cacheName !== CACHE_NAME) {
+                                    console.log('Eliminando caché antigua:', cacheName);
+                                    return caches.delete(cacheName);
+                                }
+                            })
+                        );
+                    }).then(() => self.clients.claim())
+                );
+            });
+            
+            self.addEventListener('fetch', (event) => {
+                event.respondWith(
+                    caches.match(event.request).then((response) => {
+                        return response || fetch(event.request).then((response) => {
+                            return caches.open(CACHE_NAME).then((cache) => {
+                                cache.put(event.request, response.clone());
+                                return response;
+                            });
+                        });
+                    })
+                );
+            });
+            
+            // Sistema de actualización
+            self.addEventListener('message', (event) => {
+                if (event.data.action === 'skipWaiting') {
+                    self.skipWaiting();
+                }
+            });
+        `;
+        
+        const blob = new Blob([swCode], { type: 'application/javascript' });
+        const swUrl = URL.createObjectURL(blob);
+        
+        navigator.serviceWorker.register(swUrl)
+            .then((registration) => {
+                console.log('✅ Service Worker registrado correctamente');
+                
+                // Verificar actualizaciones del Service Worker
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('🎉 Nueva versión del Service Worker disponible');
+                            if (confirm('🎉 Nueva versión disponible!\n\n¿Deseas actualizar ahora?')) {
+                                newWorker.postMessage({ action: 'skipWaiting' });
+                                window.location.reload();
+                            }
+                        }
+                    });
+                });
+            })
+            .catch((error) => {
+                console.log('❌ Error al registrar Service Worker:', error);
+            });
+        
+        // Recargar cuando el Service Worker tome control
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+                refreshing = true;
+                window.location.reload();
+            }
+        });
+    }
+    
+    // Sistema de verificación de versión embebido
+    function verificarVersion() {
+        const versionLocal = localStorage.getItem('appVersion');
+        
+        if (!versionLocal) {
+            // Primera vez que se carga la app
+            localStorage.setItem('appVersion', APP_VERSION);
+            console.log('✅ Versión inicial guardada:', APP_VERSION);
+            mostrarNotificacion('Bienvenido a Presupuesto v' + APP_VERSION);
+            return;
+        }
+        
+        if (APP_VERSION !== versionLocal) {
+            // HAY UNA NUEVA VERSIÓN
+            console.log('🎉 Nueva versión detectada!');
+            console.log('Versión local:', versionLocal);
+            console.log('Versión actual:', APP_VERSION);
+            
+            // Mostrar modal de actualización
+            mostrarModalActualizacion(versionLocal, APP_VERSION);
+        }
+    }
+    
+    function mostrarModalActualizacion(versionVieja, versionNueva) {
+        const shouldUpdate = confirm(
+            '🎉 ¡Nueva versión disponible!\n\n' +
+            'Versión actual: v' + versionVieja + '\n' +
+            'Nueva versión: v' + versionNueva + '\n\n' +
+            '¿Deseas actualizar ahora?\n\n' +
+            '(Se recargará la página)'
+        );
+        
+        if (shouldUpdate) {
+            localStorage.setItem('appVersion', APP_VERSION);
+            console.log('📥 Actualizando a versión', APP_VERSION);
+            
+            // Limpiar cachés si es posible
+            if ('caches' in window) {
+                caches.keys().then((names) => {
+                    names.forEach((name) => {
+                        caches.delete(name);
+                    });
+                });
+            }
+            
+            // Recargar la página
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 500);
+        }
+    }
+    
+    function mostrarNotificacion(mensaje) {
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 122, 255, 0.95);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            animation: slideDown 0.3s ease;
+        `;
+        toast.textContent = mensaje;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideUp 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+    
+    // Agregar estilos para animaciones
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideDown {
+            from { transform: translate(-50%, -100%); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translate(-50%, 0); opacity: 1; }
+            to { transform: translate(-50%, -100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Verificar versión al cargar
+    setTimeout(verificarVersion, 1000);
+    
+    // Verificar versión periódicamente
+    setInterval(verificarVersion, VERSION_CHECK_INTERVAL);
+    
+    // Verificar cuando el usuario vuelve a la pestaña
+    window.addEventListener('focus', verificarVersion);
+    
+    // Verificar cuando la app vuelve a estar visible (móvil)
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            verificarVersion();
+        }
+    });
+    
+    // Botón manual de actualización (opcional - se puede agregar al HTML)
+    window.forzarActualizacion = function() {
+        const versionActual = localStorage.getItem('appVersion');
+        mostrarModalActualizacion(versionActual || '0.0.0', APP_VERSION);
+    };
+    
+    // Mostrar versión en consola
+    console.log('%c📱 Presupuesto Familiar', 'font-size: 20px; font-weight: bold; color: #007AFF;');
+    console.log('%cVersión: ' + APP_VERSION, 'font-size: 14px; color: #666;');
+    console.log('%c✅ Sistema de actualización automática activado', 'color: #34C759;');
+    console.log('%cPara forzar una actualización, escribe: forzarActualizacion()', 'color: #999; font-style: italic;');
+})();
+</script>
+
+<!-- ========== INSTALACIÓN COMO PWA ========== -->
+<script>
+// Detectar si se puede instalar como PWA
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevenir que Chrome muestre el prompt automáticamente
+    e.preventDefault();
+    deferredPrompt = e;
+    console.log('✅ App lista para instalar como PWA');
+    
+    // Opcionalmente mostrar un botón de instalación personalizado
+    // mostrarBotonInstalar();
+});
+
+window.addEventListener('appinstalled', () => {
+    console.log('✅ App instalada correctamente');
+    deferredPrompt = null;
+});
+
+// Función para instalar la app (se puede llamar desde un botón)
+window.instalarApp = async function() {
+    if (!deferredPrompt) {
+        alert('La aplicación ya está instalada o no se puede instalar en este momento.');
+        return;
+    }
+    
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+        console.log('✅ Usuario aceptó instalar la app');
+    } else {
+        console.log('❌ Usuario rechazó instalar la app');
+    }
+    
+    deferredPrompt = null;
+};
+</script>
+
+<!-- ========== MANIFEST EMBEBIDO ========== -->
+<script>
+// Crear manifest dinámicamente
+const manifestData = {
+    "name": "Presupuesto Familiar",
+    "short_name": "Presupuesto",
+    "description": "Gestión de presupuesto familiar",
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#f2f2f7",
+    "theme_color": "#007AFF",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23007AFF' width='100' height='100' rx='20'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>💰</text></svg>",
+            "sizes": "192x192",
+            "type": "image/svg+xml"
+        },
+        {
+            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23007AFF' width='100' height='100' rx='20'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>💰</text></svg>",
+            "sizes": "512x512",
+            "type": "image/svg+xml"
+        }
+    ]
+};
+
+const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
+const manifestURL = URL.createObjectURL(manifestBlob);
+
+const manifestLink = document.createElement('link');
+manifestLink.rel = 'manifest';
+manifestLink.href = manifestURL;
+document.head.appendChild(manifestLink);
+
+console.log('✅ Manifest PWA cargado dinámicamente');
+</script>
+
+</body>
+</html>
